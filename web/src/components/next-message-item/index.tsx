@@ -124,7 +124,7 @@ function MessageItem({
         >
           {visibleAvatar &&
             (item.role === MessageType.User ? (
-              <Avatar size={40} src={avatar ?? '/logo.svg'} />
+              <Avatar size={40} src={avatar ?? '/Itechops_logo.png'} />
             ) : avatarDialog ? (
               <Avatar size={40} src={avatarDialog} />
             ) : (

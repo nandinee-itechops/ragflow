@@ -10,7 +10,7 @@ import { useFetchDataOnMount } from './hooks/use-fetch-data';
 
 const { Content } = Layout;
 
-function RagFlow() {
+function ITechOpsFlow() {
   const [collapsed, setCollapsed] = useState(false);
   const {
     visible: chatDrawerVisible,
@@ -42,4 +42,4 @@ function RagFlow() {
   );
 }
 
-export default RagFlow;
+export default ITechOpsFlow;
