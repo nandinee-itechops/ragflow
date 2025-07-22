@@ -2,16 +2,17 @@
   height: 100%;
   width: 100%;
 
-  .chatAppWrapper {
-    width: 288px;
+  .singleSidebarWrapper {
+    width: 320px;
     padding: 26px;
 
-    .chatAppContent {
+    .conversationContent {
       overflow-y: auto;
       width: 100%;
+      max-height: calc(100vh - 300px);
     }
 
-    .chatAppCard {
+    .conversationCard {
       :global(.ant-card-body) {
         padding: 10px;
       }
@@ -21,31 +22,20 @@
         }
       }
     }
-    .chatAppCardSelected {
+
+    .conversationCardSelected {
       :global(.ant-card-body) {
         background-color: @gray11;
         border-radius: 8px;
       }
     }
-    .chatAppCardSelectedDark {
+
+    .conversationCardSelectedDark {
       :global(.ant-card-body) {
         background-color: rgba(255, 255, 255, 0.1);
         border-radius: 8px;
       }
     }
-  }
-  .chatTitleWrapper {
-    width: 220px;
-    padding: 26px 0;
-  }
-
-  .chatTitle {
-    padding: 5px 15px;
-  }
-
-  .chatTitleContent {
-    padding: 5px 10px;
-    overflow: auto;
   }
 
   .chatSpin {
@@ -53,25 +43,6 @@
       display: flex;
       flex-direction: column;
       gap: 10px;
-    }
-  }
-
-  .chatTitleCard {
-    :global(.ant-card-body) {
-      padding: 8px;
-    }
-  }
-
-  .chatTitleCardSelected {
-    :global(.ant-card-body) {
-      background-color: @gray11;
-      border-radius: 8px;
-    }
-  }
-  .chatTitleCardSelectedDark {
-    :global(.ant-card-body) {
-      background-color: rgba(255, 255, 255, 0.1);
-      border-radius: 8px;
     }
   }
 
