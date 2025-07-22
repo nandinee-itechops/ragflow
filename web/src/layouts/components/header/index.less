@@ -118,3 +118,17 @@
   max-width: 15px;
   max-height: 15px;
 }
+
+.menuTrigger {
+  transition: all 0.2s ease-in-out;
+
+  &:hover {
+    background-color: rgba(0, 0, 0, 0.05) !important;
+    border-color: rgba(0, 0, 0, 0.2) !important;
+  }
+
+  &:focus {
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.2);
+  }
+}

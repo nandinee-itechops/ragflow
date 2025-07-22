@@ -4,13 +4,23 @@ import { ReactComponent as KnowledgeBaseIcon } from '@/assets/svg/knowledge-base
 import { useTranslate } from '@/hooks/common-hooks';
 import { useFetchAppConf } from '@/hooks/logic-hooks';
 import { useNavigateWithFromState } from '@/hooks/route-hook';
-import { MessageOutlined, SearchOutlined } from '@ant-design/icons';
-import { Flex, Layout, Radio, Space, theme } from 'antd';
-import { MouseEventHandler, useCallback, useMemo } from 'react';
+import {
+  MessageOutlined,
+  MoreOutlined,
+  SearchOutlined,
+} from '@ant-design/icons';
+import { Button, Flex, Layout, Space, theme } from 'antd';
+import { useCallback, useMemo } from 'react';
 import { useLocation } from 'umi';
 import Toolbar from '../right-toolbar';
 
 import { useTheme } from '@/components/theme-provider';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import styles from './index.less';
 
 const { Header } = Layout;
@@ -35,18 +45,10 @@ const RagHeader = () => {
     [t],
   );
 
-  const currentPath = useMemo(() => {
-    return (
-      tagsData.find((x) => pathname.startsWith(x.path))?.name || 'knowledge'
-    );
-  }, [pathname, tagsData]);
-
-  const handleChange = useCallback(
-    (path: string): MouseEventHandler =>
-      (e) => {
-        e.preventDefault();
-        navigate(path);
-      },
+  const handleMenuItemClick = useCallback(
+    (path: string) => {
+      navigate(path);
+    },
     [navigate],
   );
 
@@ -65,48 +67,66 @@ const RagHeader = () => {
         height: '72px',
       }}
     >
-      <a href={window.location.origin}>
-        <Space
-          size={12}
-          onClick={handleLogoClick}
-          className={styles.logoWrapper}
-        >
-          <img src="/Itechops_logo.png" alt="" className={styles.appIcon} />
-          <span className={styles.appName}>{appConf.appName}</span>
-        </Space>
-      </a>
-      <Space size={[0, 8]} wrap>
-        <Radio.Group
-          defaultValue="a"
-          buttonStyle="solid"
-          className={
-            themeRag === 'dark' ? styles.radioGroupDark : styles.radioGroup
-          }
-          value={currentPath}
-        >
-          {tagsData.map((item, index) => (
-            <Radio.Button
-              className={`${themeRag === 'dark' ? 'dark' : 'light'} ${index === 0 ? 'first' : ''} ${index === tagsData.length - 1 ? 'last' : ''}`}
-              value={item.name}
-              key={item.name}
-            >
-              <a href={item.path}>
-                <Flex
-                  align="center"
-                  gap={8}
-                  onClick={handleChange(item.path)}
-                  className="cursor-pointer"
+      <Space size={12} align="center">
+        <a href={window.location.origin}>
+          <Space
+            size={12}
+            onClick={handleLogoClick}
+            className={styles.logoWrapper}
+          >
+            <img src="/Itechops_logo.png" alt="" className={styles.appIcon} />
+            <span className={styles.appName}>{appConf.appName}</span>
+          </Space>
+        </a>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button
+              type="text"
+              icon={<MoreOutlined />}
+              className={styles.menuTrigger}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                width: '40px',
+                height: '40px',
+                borderRadius: '6px',
+                border: `1px solid ${themeRag === 'dark' ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.1)'}`,
+                backgroundColor:
+                  themeRag === 'dark'
+                    ? 'rgba(255, 255, 255, 0.05)'
+                    : 'rgba(0, 0, 0, 0.02)',
+              }}
+            />
+          </DropdownMenuTrigger>
+          <DropdownMenuContent className="w-56" align="start">
+            {tagsData.map((item) => {
+              const IconComponent = item.icon;
+              const isActive = pathname.startsWith(item.path);
+              return (
+                <DropdownMenuItem
+                  key={item.name}
+                  onClick={() => handleMenuItemClick(item.path)}
+                  className={`cursor-pointer ${isActive ? 'bg-accent text-accent-foreground' : ''}`}
                 >
-                  <item.icon
-                    className={styles.radioButtonIcon}
-                    stroke={item.name === currentPath ? 'black' : 'white'}
-                  ></item.icon>
-                  {item.name}
-                </Flex>
-              </a>
-            </Radio.Button>
-          ))}
-        </Radio.Group>
+                  <Flex align="center" gap={8}>
+                    <IconComponent
+                      className={styles.radioButtonIcon}
+                      style={{
+                        color: isActive
+                          ? 'var(--colors-text-core-standard)'
+                          : 'var(--colors-text-neutral-standard)',
+                        width: '16px',
+                        height: '16px',
+                      }}
+                    />
+                    <span>{item.name}</span>
+                  </Flex>
+                </DropdownMenuItem>
+              );
+            })}
+          </DropdownMenuContent>
+        </DropdownMenu>
       </Space>
       <Toolbar></Toolbar>
     </Header>
