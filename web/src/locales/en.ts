@@ -38,6 +38,7 @@ export default {
       previousPage: 'Previous',
       nextPage: 'Next',
       add: 'Add',
+      permissionManagement: 'Permission Management',
     },
     login: {
       login: 'Sign in',
