@@ -161,7 +161,12 @@ def filename_type(filename):
     if re.match(r".*\.(wav|flac|ape|alac|wavpack|wv|mp3|aac|ogg|vorbis|opus)$", filename):
         return FileType.AURAL.value
 
-    if re.match(r".*\.(jpg|jpeg|png|tif|gif|pcx|tga|exif|fpx|svg|psd|cdr|pcd|dxf|ufo|eps|ai|raw|WMF|webp|avif|apng|icon|ico|mpg|mpeg|avi|rm|rmvb|mov|wmv|asf|dat|asx|wvx|mpe|mpa|mp4)$", filename):
+    # Video files - use VISUAL type but handled separately from images
+    if re.match(r".*\.(mp4|avi|mov|wmv|flv|webm|mkv|m4v|3gp|mpg|mpeg|rm|rmvb|asf|dat|asx|wvx|mpe|mpa|ogv|m2v|ts|mts|m2ts)$", filename):
+        return FileType.VISUAL.value  # Keep as VISUAL but handled separately in processing
+
+    # Image files only
+    if re.match(r".*\.(jpg|jpeg|png|tif|tiff|gif|bmp|pcx|tga|exif|fpx|svg|psd|cdr|pcd|dxf|ufo|eps|ai|raw|WMF|webp|avif|apng|icon|ico)$", filename):
         return FileType.VISUAL.value
 
     return FileType.OTHER.value
@@ -190,6 +195,14 @@ def thumbnail_img(filename, blob):
                     break
         pdf.close()
         return img
+
+    # Skip video files - they should not be processed as images
+    elif re.match(r".*\.(mp4|avi|mov|wmv|flv|webm|mkv|m4v|3gp|mpg|mpeg|rm|rmvb|asf|dat|asx|wvx|mpe|mpa|ogv|m2v|ts|mts|m2ts)$", filename):
+        return None
+
+    # Skip audio files - they should not be processed as images  
+    elif re.match(r".*\.(wav|flac|ape|alac|wavpack|wv|mp3|aac|ogg|vorbis|opus)$", filename):
+        return None
 
     elif re.match(r".*\.(jpg|jpeg|png|tif|gif|icon|ico|webp)$", filename):
         image = Image.open(BytesIO(blob))

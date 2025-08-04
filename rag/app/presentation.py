@@ -26,7 +26,7 @@ from deepdoc.parser.pdf_parser import VisionParser
 from rag.nlp import tokenize, is_english
 from rag.nlp import rag_tokenizer
 from deepdoc.parser import PdfParser, PptParser, PlainParser
-from PyPDF2 import PdfReader as pdf2_read
+from pypdf import PdfReader as pdf2_read
 
 
 class Ppt(PptParser):
