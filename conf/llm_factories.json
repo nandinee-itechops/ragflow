@@ -3641,6 +3641,13 @@
                     "is_tools": false
                 },
                 {
+                    "llm_name": "whisper-small",
+                    "tags": "SPEECH2TEXT",
+                    "max_tokens": 512,
+                    "model_type": "speech2text",
+                    "is_tools": true
+                },
+                {
                     "llm_name": "whisper-base",
                     "tags": "SPEECH2TEXT",
                     "max_tokens": 512,

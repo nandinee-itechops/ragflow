@@ -19,6 +19,7 @@ import json
 import os
 import re
 from abc import ABC
+from urllib.parse import urljoin
 
 import requests
 from openai import OpenAI
@@ -92,36 +93,95 @@ class XinferenceSeq2txt(Base):
     _FACTORY_NAME = "Xinference"
 
     def __init__(self, key, model_name="whisper-small", **kwargs):
-        self.base_url = kwargs.get("base_url", None)
+        self.base_url = kwargs.get("base_url", "http://127.0.0.1:9997").rstrip('/')
         self.model_name = model_name
         self.key = key
-
-    def transcription(self, audio, language="zh", prompt=None, response_format="json", temperature=0.7):
-        if isinstance(audio, str):
-            audio_file = open(audio, "rb")
-            audio_data = audio_file.read()
-            audio_file_name = audio.split("/")[-1]
-        else:
-            audio_data = audio
-            audio_file_name = "audio.wav"
-
-        payload = {"model": self.model_name, "language": language, "prompt": prompt, "response_format": response_format, "temperature": temperature}
-
-        files = {"file": (audio_file_name, audio_data, "audio/wav")}
-
+        self.model_uid = None
+        self.xinference_client = None
+        
+        # Initialize Xinference client and find model
         try:
-            response = requests.post(f"{self.base_url}/v1/audio/transcriptions", files=files, data=payload)
-            response.raise_for_status()
-            result = response.json()
+            from xinference.client import Client
+            self.xinference_client = Client(self.base_url)
+            
+            # Find the correct model UID
+            models = self.xinference_client.list_models()
+            for model in models:
+                model_name_in_list = model.get('model_name', '')
+                model_uid_in_list = model.get('model_uid', '')
+                model_type = model.get('model_type', '')
+                
+                # Match by model name and ensure it's an audio model
+                if (model_name_in_list == self.model_name and 
+                    model_type == 'audio'):
+                    self.model_uid = model_uid_in_list
+                    break
+                    
+            # If exact match not found, try any whisper audio model
+            if not self.model_uid:
+                for model in models:
+                    model_name_in_list = model.get('model_name', '')
+                    model_type = model.get('model_type', '')
+                    
+                    if ('whisper' in model_name_in_list.lower() and 
+                        model_type == 'audio'):
+                        self.model_uid = model.get('model_uid')
+                        break
+                        
+        except Exception as e:
+            print(f"Warning: Could not initialize Xinference client: {e}")
+            
+        # Set up OpenAI-compatible client using urljoin like other Xinference classes
+        base_url = urljoin(self.base_url, "v1")
+        self.client = OpenAI(
+            api_key=self.key or "empty",
+            base_url=base_url
+        )
 
-            if "text" in result:
-                transcription_text = result["text"].strip()
-                return transcription_text, num_tokens_from_string(transcription_text)
+    def transcription(self, audio, language="en", prompt=None, response_format="text", temperature=0.0):
+        try:
+            # Handle different audio input types
+            if isinstance(audio, str):
+                # File path
+                with open(audio, "rb") as f:
+                    audio_data = io.BytesIO(f.read())
+                    audio_data.name = os.path.basename(audio)
+            elif isinstance(audio, bytes):
+                # Raw bytes
+                audio_data = io.BytesIO(audio)
+                audio_data.name = "audio.wav"
+            elif hasattr(audio, 'read'):
+                # File-like object
+                audio_data = audio
+                if not hasattr(audio_data, 'name'):
+                    audio_data.name = "audio.wav"
             else:
-                return "**ERROR**: Failed to retrieve transcription.", 0
+                raise ValueError(f"Unsupported audio type: {type(audio)}")
 
-        except requests.exceptions.RequestException as e:
-            return f"**ERROR**: {str(e)}", 0
+            # Use the model UID if available, otherwise use model name
+            model_to_use = self.model_uid if self.model_uid else self.model_name
+            
+            # Call OpenAI-compatible API
+            result = self.client.audio.transcriptions.create(
+                model=model_to_use,
+                file=audio_data,
+                language=language,
+                prompt=prompt,
+                response_format=response_format,
+                temperature=temperature
+            )
+            
+            # Handle response based on format
+            if response_format == "text":
+                transcription_text = result.strip() if isinstance(result, str) else str(result).strip()
+            else:
+                transcription_text = result.text.strip() if hasattr(result, 'text') else str(result).strip()
+            
+            return transcription_text, num_tokens_from_string(transcription_text)
+            
+        except Exception as e:
+            error_msg = f"**ERROR**: {str(e)}"
+            return error_msg, 0
 
 
 class TencentCloudSeq2txt(Base):
